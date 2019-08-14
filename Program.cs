@@ -1,6 +1,7 @@
 ﻿using System;
 using static System.Console;
 using System.Diagnostics;
+using Microsoft.Data.DataView;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
@@ -51,10 +52,10 @@ namespace myApp
             sw.Start();
             // If working in Visual Studio, make sure the 'Copy to Output Directory'
             // property of iris-data.txt is set to 'Copy always'
-            var reader = mlContext.Data.CreateTextReader<IrisData>(separatorChar: ',', hasHeader: false);
+            var reader = mlContext.Data.CreateTextLoader<IrisData>(separatorChar: ',', hasHeader: false);
             
             //https://en.m.wikipedia.org/wiki/Iris_flower_data_set
-            IDataView trainingDataView = reader.Read("iris-data.txt");
+            IDataView trainingDataView = reader.Load("iris-data.txt");
 
             // STEP 3: Transform your data and add a learner
             // Assign numeric values to text in the "Label" column, because only
@@ -63,7 +64,7 @@ namespace myApp
             // Convert the Label back into original text (after converting to number in step 3)
             var pipeline = mlContext.Transforms.Conversion.MapValueToKey("Label")
                 .Append(mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth"))
-                .Append(mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Features"))
+                .Append(mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumnName: "Label", featureColumnName: "Features"))
                 .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
             sw.Stop();
             WriteLine($"{sw.Elapsed.Seconds*1000 + sw.Elapsed.Milliseconds} ms");
